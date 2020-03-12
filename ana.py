@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import style
 from math import exp
+from functools import wraps
 
 style.use("seaborn")
 
@@ -63,13 +64,23 @@ def clamp(min_, max_, x):
     return max(min_, min(max_, x))
 
 
+def mult(factor):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            return factor * f(*args, **kwargs)
+        return decorated
+    return decorator
+
+
 class Person():
+
     def __init__(self):
         self.age = get_age(random.random())
         self.days_since_infection = 0
 
     def cure_function(self):
-        return -exp(-(self.days_since_infection + 2)/14) + 1.3
+        return 1/(self.age/10) * (1 - exp(-self.days_since_infection / 10))
 
     @staticmethod
     def number_of_people_met(day):
@@ -80,6 +91,7 @@ class Person():
         else:
             return 1
 
+    @mult(0.065)
     def death_chance(self):
         # source: worldometers.info COVID-19 Fatality rate by age
         age = self.age
@@ -98,6 +110,7 @@ class Person():
         else:
             return 0.148
 
+    @mult(0.28)
     def infection_chance(self):
         # just guessed some values
         age = self.age
@@ -114,7 +127,8 @@ class Person():
         return clamp(0, 1, self.cure_function())
 
     def gets_cured(self):
-        return random.random() < self.cure_chance()
+        y = random.random() < self.cure_chance()
+        return y
 
     def dies(self):
         return random.random() < self.death_chance()
@@ -125,6 +139,7 @@ def age_distribution(population):
 
 
 deaths = []
+death_tolls = [0]
 while len(deaths) == 0:
     infections = []
     populations = [1]
@@ -133,6 +148,7 @@ while len(deaths) == 0:
     for day in count(0):
         new_population = []
         for person in population:
+            person.days_since_infection += 1
             if person.dies():
                 deaths.append(person)
                 continue
@@ -149,14 +165,17 @@ while len(deaths) == 0:
                         infections.append(p)
         population = new_population
         populations.append(len(new_population))
-        if day >= 70 or len(population) > 100000:
+        death_tolls.append(len(deaths))
+        if day >= 75 or len(population) > 200000:
             break
 
 
 plt.subplot(2, 1, 1)
-plt.semilogy(range(len(populations)), populations)
+plt.semilogy(range(len(populations)), populations, label="Currently Infected")
+plt.semilogy(range(len(populations)), death_tolls, label="Dead")
 plt.xlabel("Time in days")
-plt.ylabel("Number infected people")
+plt.ylabel("Number of People")
+plt.legend()
 plt.subplot(2, 3, 4)
 ages = age_distribution(infections)
 plt.bar(ages.keys(), ages.values())
