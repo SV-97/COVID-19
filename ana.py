@@ -40,7 +40,7 @@ for key, value in population_age_distribution.items():
     s += value / number_of_people
     age_percentages[key] = s
 
-print(age_percentages)
+# print(age_percentages)
 xs = list(age_percentages.keys())  # ages
 ys = list(age_percentages.values())  # folded probabilities
 # function that can be samples with random values from 0 to 1 to produce an age between 0 and 100 corresponding to the age distribution of germany's population
@@ -74,6 +74,7 @@ def mult(factor):
 
 
 class Person():
+    __slots__ = ["age", "days_since_infection"]
 
     def __init__(self):
         self.age = get_age(random.random())
@@ -140,34 +141,34 @@ def age_distribution(population):
 
 deaths = []
 death_tolls = [0]
-while len(deaths) == 0:
-    infections = []
-    populations = [1]
-    population = [Person()]
-    cured = []
-    for day in count(0):
-        new_population = []
-        for person in population:
-            person.days_since_infection += 1
-            if person.dies():
-                deaths.append(person)
-                continue
-            elif person.gets_cured():
-                cured.append(person)
-                continue
-            else:
-                new_population.append(person)
-                # infect other people
-                for _ in range(Person.number_of_people_met(person.days_since_infection)):
-                    p = Person()
-                    if random.random() < p.infection_chance():
-                        new_population.append(p)
-                        infections.append(p)
-        population = new_population
-        populations.append(len(new_population))
-        death_tolls.append(len(deaths))
-        if day >= 75 or len(population) > 200000:
-            break
+infections = []
+populations = [1]
+population = [Person()]
+cured = []
+for day in count(0):
+    print(day)
+    new_population = []
+    for person in population:
+        person.days_since_infection += 1
+        if person.dies():
+            deaths.append(person)
+            continue
+        elif person.gets_cured():
+            cured.append(person)
+            continue
+        else:
+            new_population.append(person)
+            # infect other people
+            for _ in range(Person.number_of_people_met(person.days_since_infection)):
+                p = Person()
+                if random.random() < p.infection_chance():
+                    new_population.append(p)
+                    infections.append(p)
+    population = new_population
+    populations.append(len(new_population))
+    death_tolls.append(len(deaths))
+    if day >= 75 or len(population) > 100000:
+        break
 
 
 plt.subplot(2, 1, 1)
