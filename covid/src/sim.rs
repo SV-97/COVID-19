@@ -14,7 +14,7 @@ fn get_age(x: f32) -> usize {
     for i in 0..9 {
         if AGE_X[i] <= x && x < AGE_X[i + 1] {
             let val =
-                (AGE_Y[i + 1] - AGE_Y[i]) / (AGE_X[i + 1] - AGE_X[i]) * (x - AGE_X[i]) + AGE_Y[i];
+                (AGE_Y[i + 1] - AGE_Y[i]) / (AGE_X[i + 1] - AGE_X[i]) * (x - AGE_X[i]) + AGE_Y[i]; // linear interpolation
             return val as usize;
         }
     }
